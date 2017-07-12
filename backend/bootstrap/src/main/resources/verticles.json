@@ -1,0 +1,8 @@
+[
+  {
+    "name": "com.mindera.inspiringcareer.routing.RoutingVerticle"
+  },
+  {
+    "name": "com.mindera.inspiringcareer.backend.controller.HealthcheckController"
+  }
+]

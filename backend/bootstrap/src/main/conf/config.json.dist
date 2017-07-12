@@ -1,0 +1,13 @@
+{
+  "app": {
+    "http.port": 5000,
+    "path": "/api/inspiring-career"
+  },
+  "development": {
+    "cors": {
+      "enable": true,
+      "allowedOrigins": "*"
+    }
+  },
+  "guice_binder": "BootstrapBinder"
+}
