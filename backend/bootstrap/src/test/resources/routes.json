@@ -1,0 +1,11 @@
+{
+  "/test": {
+    "GET": "testAddress"
+  },
+  "/bo/test": {
+    "GET": "apiTestAddress"
+  },
+  "/health": {
+    "GET": "health"
+  }
+}

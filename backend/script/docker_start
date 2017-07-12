@@ -1,0 +1,36 @@
+#!/bin/sh
+
+sed "s/__HOSTNAME__/$HOSTNAME/g" /config/java.conf > /etc/collectd/java.conf
+echo -e "\n" >> /etc/collectd/java.conf
+
+LOGGING_DIR=${LOGGING_DIR:-/logs}
+
+VERTX_WORKER_POOL_SIZE=${VERTX_WORKER_POOL_SIZE:-20}
+
+JMX_PORT=${JMX_PORT:-9091}
+JMX_LOCALONLY=${JMX_LOCALONLY:-false}
+JMX_AUTH=${JMX_AUTH:-false}
+JMX_SSL=${JMX_SSL:-false}
+
+GC_PAUSE=${GC_PAUSE:-200}
+GC_LOG=${GC_LOG:-$HOSTNAME'.gc.%p.log'}
+
+if [ -f $HOME/.shinit ]; then
+   source $HOME/.shinit
+fi
+
+# JMX parameters
+JMX_OPTS="-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=$JMX_PORT "
+JMX_OPTS="$JMX_OPTS -Dcom.sun.management.jmxremote.local.only=$JMX_LOCALONLY "
+JMX_OPTS="$JMX_OPTS -Dcom.sun.management.jmxremote.authenticate=$JMX_AUTH "
+JMX_OPTS="$JMX_OPTS -Dcom.sun.management.jmxremote.ssl=$JMX_SSL"
+
+# JVM configurations
+GC_OPTS="-XX:MaxGCPauseMillis=$GC_PAUSE -Xloggc:/logs/$GC_LOG "
+GC_OPTS="$GC_OPTS -XX:+PrintGCTimeStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime"
+JVM_OPTS="-Xmx1024m -Xms1024m -XX:MaxMetaspaceSize=256m"
+
+VERTX_OPTS="-Dvertx.options.workerPoolSize=$VERTX_WORKER_POOL_SIZE -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.configPath=$VERTICLE_HOME/config/statful.json -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory -Dvertx.disableDnsResolver=true"
+JAVA_OPTS="$JAVA_OPTS $JMX_OPTS $GC_OPTS $JVM_OPTS $VERTX_OPTS -Dlogback.configurationFile=$VERTICLE_HOME/config/logback.xml -Dlogging.dir=$LOGGING_DIR -Dcom.sun.net.ssl.enableECC=false"
+
+exec java $JAVA_OPTS -jar $VERTICLE_FILE -conf $VERTICLE_HOME/config/config.json -Dapplication.properties=$VERTICLE_HOME/config/application.properties -Ddrumbeat.properties=$VERTICLE_HOME/config/drumbeat-properties.json
